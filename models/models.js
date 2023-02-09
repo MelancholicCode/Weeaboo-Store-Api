@@ -12,9 +12,9 @@ const User = sequelize.define('user', {
 
 const Product = sequelize.define('product', {
   id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-  title: {type: DataTypes.STRING, unique: true, allowNull: false},
-  description: {type: DataTypes.STRING, allowNull: false},
-  poster: {type: DataTypes.STRING, allowNull: false},
+  name: {type: DataTypes.STRING, unique: true, allowNull: false},
+  description: {type: DataTypes.STRING(800), allowNull: false},
+  img: {type: DataTypes.STRING, allowNull: false},
   price: {type: DataTypes.INTEGER, allowNull: false},
   slug: {type: DataTypes.STRING, unique: true, allowNull: false}
 });
@@ -48,6 +48,10 @@ const AuthorGenre = sequelize.define('author_genre', {
   id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true}
 });
 
+const ProductGenre = sequelize.define('product_genre', {
+  id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true}
+});
+
 User.hasMany(CartProduct);
 CartProduct.belongsTo(User);
 
@@ -63,8 +67,8 @@ Product.belongsTo(CartProduct);
 Favorite.hasOne(Product);
 Product.belongsTo(Favorite);
 
-Genre.hasMany(Product);
-Product.belongsTo(Genre);
+Genre.belongsToMany(Product, {through: ProductGenre});
+Product.belongsToMany(Genre, {through: ProductGenre});
 
 Author.hasMany(Product);
 Product.belongsTo(Author);
