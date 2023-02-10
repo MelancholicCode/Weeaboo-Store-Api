@@ -83,5 +83,6 @@ module.exports = {
   Favorite,
   Author,
   Genre,
-  Order
+  Order,
+  ProductGenre
 };
