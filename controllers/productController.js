@@ -25,26 +25,30 @@ class ProductController {
       next(ApiError.badRequest(err.message));
     }
   }
-  async getAll(req, res) {
+  async getAll(req, res, next) {
     try {
-      const {genreId, authorId} = req.query;
+      let {genreId, authorId, limit, page} = req.query;
+
+      page = page || 1;
+      limit = limit || 8;
+      let offset = page * limit - limit;
 
       let products;
       if (!genreId && !authorId) {
-        products = await Product.findAll();
+        products = await Product.findAndCountAll({limit, offset});
       }
       if (genreId && !authorId) {
         const productGenre = await ProductGenre.findAll({where: {genreId}});
         const productIds = productGenre.map(item => item.toJSON().productId);
-        products = await Product.findAll({where: {id: productIds}});
+        products = await Product.findAndCountAll({where: {id: productIds}, limit, offset});
       }
       if (!genreId && authorId) {
-        products = await Product.findAll({where: {authorId}});
+        products = await Product.findAndCountAll({where: {authorId}, limit, offset});
       }
       if (genreId && authorId) {
         const productGenre = await ProductGenre.findAll({where: {genreId}});
         const productIds = productGenre.map(item => item.toJSON().productId);
-        products = await Product.findAll({where: {authorId, id: productIds}});
+        products = await Product.findAndCountAll({where: {authorId, id: productIds}, limit, offset});
       }
       return res.json(products);
     } catch(err) {
@@ -52,7 +56,9 @@ class ProductController {
     }
   }
   async getOne(req, res) {
-
+    const {id} = req.params;
+    const product = await Product.findOne({where: {id}});
+    return res.json(product);
   }
   async delete(req, res) {
 
