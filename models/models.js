@@ -13,7 +13,7 @@ const User = sequelize.define('user', {
 const Product = sequelize.define('product', {
   id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
   name: {type: DataTypes.STRING, unique: true, allowNull: false},
-  description: {type: DataTypes.STRING(800), allowNull: false},
+  description: {type: DataTypes.STRING(1500), allowNull: false},
   img: {type: DataTypes.STRING, allowNull: false},
   price: {type: DataTypes.INTEGER, allowNull: false},
   slug: {type: DataTypes.STRING, unique: true, allowNull: false}

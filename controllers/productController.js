@@ -14,9 +14,11 @@ class ProductController {
   
       const product = await Product.create({name, description, img: filename, price, slug, authorId});
 
-      JSON.parse(genreIds).forEach(id => {
-        ProductGenre.create({genreId: id, productId: product.id});
-      });
+      if (genreIds) {
+        JSON.parse(genreIds).forEach(id => {
+          ProductGenre.create({genreId: id, productId: product.id});
+        });
+      }
     
       return res.json(product);
     } catch(err) {
@@ -24,22 +26,30 @@ class ProductController {
     }
   }
   async getAll(req, res) {
-    const {genreId, authorId} = req.query;
-    let products;
-    if (!genreId && !authorId) {
-      products = await Product.findAll();
+    try {
+      const {genreId, authorId} = req.query;
+
+      let products;
+      if (!genreId && !authorId) {
+        products = await Product.findAll();
+      }
+      if (genreId && !authorId) {
+        const productGenre = await ProductGenre.findAll({where: {genreId}});
+        const productIds = productGenre.map(item => item.toJSON().productId);
+        products = await Product.findAll({where: {id: productIds}});
+      }
+      if (!genreId && authorId) {
+        products = await Product.findAll({where: {authorId}});
+      }
+      if (genreId && authorId) {
+        const productGenre = await ProductGenre.findAll({where: {genreId}});
+        const productIds = productGenre.map(item => item.toJSON().productId);
+        products = await Product.findAll({where: {authorId, id: productIds}});
+      }
+      return res.json(products);
+    } catch(err) {
+      next(ApiError.badRequest(err.message));
     }
-    if (genreId && !authorId) {
-      const productIds = await ProductGenre.findAll({where: {genreId}});
-      console.log(productIds);
-    }
-    if (!genreId && authorId) {
-      products = await Product.findAll({where: {authorId}});
-    }
-    if (genreId && authorId) {
-      products = await Product.findAll({where: {genreId, authorId}});
-    }
-    return res.json(products);
   }
   async getOne(req, res) {
 
