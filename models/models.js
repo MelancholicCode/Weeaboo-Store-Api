@@ -1,6 +1,5 @@
 const sequelize = require('../db');
 const {DataTypes} = require('sequelize');
-const { Sequelize } = require('../db');
 
 const User = sequelize.define('user', {
   id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
@@ -19,8 +18,13 @@ const Product = sequelize.define('product', {
   slug: {type: DataTypes.STRING, unique: true, allowNull: false}
 });
 
+const Cart = sequelize.define('cart', {
+  id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+});
+
 const CartProduct = sequelize.define('cart_product', {
-  id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true}
+  id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+  count: {type: DataTypes.INTEGER, defaultValue: 1}
 });
 
 const Favorite = sequelize.define('favorite', {
@@ -39,9 +43,14 @@ const Genre = sequelize.define('genre', {
 
 const Order = sequelize.define('order', {
   id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-  productIds: {type: DataTypes.ARRAY(Sequelize.INTEGER)},
-  price: {type: DataTypes.INTEGER, allowNull: false},
-  date: {type: DataTypes.STRING, allowNull: false}
+  address: {type: DataTypes.STRING, allowNull: false},
+  generalPrice: {type: DataTypes.INTEGER, allowNull: false}
+});
+
+const OrderItem = sequelize.define('order_item', {
+  id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+  count: {type: DataTypes.INTEGER, allowNull: false},
+  price: {type: DataTypes.INTEGER, allowNull: false}
 });
 
 const AuthorGenre = sequelize.define('author_genre', {
@@ -52,37 +61,49 @@ const ProductGenre = sequelize.define('product_genre', {
   id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true}
 });
 
-User.hasMany(CartProduct);
-CartProduct.belongsTo(User);
-
-User.hasMany(Favorite);
-Favorite.belongsTo(User);
+User.hasOne(Cart);
+Cart.belongsTo(User);
 
 User.hasMany(Order);
 Order.belongsTo(User);
 
-CartProduct.hasOne(Product);
-Product.belongsTo(CartProduct);
+User.hasMany(Favorite);
+Favorite.belongsTo(User);
 
-Favorite.hasOne(Product);
-Product.belongsTo(Favorite);
+Cart.hasMany(CartProduct);
+CartProduct.belongsTo(Cart);
 
-Genre.belongsToMany(Product, {through: ProductGenre});
-Product.belongsToMany(Genre, {through: ProductGenre});
+Order.hasMany(OrderItem);
+OrderItem.belongsTo(Order);
+
+Product.hasOne(Favorite);
+Favorite.belongsTo(Product);
+
+Product.hasOne(CartProduct);
+CartProduct.belongsTo(Product);
+
+Product.hasOne(OrderItem);
+OrderItem.belongsTo(Product);
 
 Author.hasMany(Product);
 Product.belongsTo(Author);
+
+Product.belongsToMany(Genre, {through: ProductGenre});
+Genre.belongsToMany(Product, {through: ProductGenre});
 
 Author.belongsToMany(Genre, {through: AuthorGenre});
 Genre.belongsToMany(Author, {through: AuthorGenre});
 
 module.exports = {
   User,
-  Product,
-  CartProduct,
   Favorite,
-  Author,
-  Genre,
+  Cart,
+  CartProduct,
   Order,
-  ProductGenre
+  OrderItem,
+  Product,
+  Genre,
+  Author,
+  ProductGenre,
+  AuthorGenre
 };
