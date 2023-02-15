@@ -56,8 +56,8 @@ class ProductController {
     }
   }
   async getOne(req, res) {
-    const {id} = req.params;
-    const product = await Product.findOne({where: {id}});
+    const {slug} = req.params;
+    const product = await Product.findOne({where: {slug}});
     return res.json(product);
   }
   async delete(req, res) {
