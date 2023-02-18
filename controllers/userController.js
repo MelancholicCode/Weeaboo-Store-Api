@@ -44,6 +44,22 @@ class UserController {
     const token = generateJwt(req.user.id, req.user.name, req.user.email, req.user.role);
     return res.json({token});
   }
+  async changePassword(req, res, next) {
+    try {
+      const password = req.body.password;
+      const user = await User.findOne({where: {email: req.user.email}});
+      const comparePassword = bcrypt.compareSync(password, user.password);
+      if (comparePassword) {
+        return next(ApiError.internal('Пароль уже используется'));
+      }
+      const hashPassword = await bcrypt.hash(password, 5);
+      const newUser = await User.update({password: hashPassword}, {where: {id: req.user.id}});
+      const token = generateJwt(newUser.id, newUser.name, newUser.email, newUser.role);
+      return res.json({token});
+    } catch(err) {
+      next(ApiError.internal(err.message));
+    }
+  }
 }
 
 module.exports = new UserController();
